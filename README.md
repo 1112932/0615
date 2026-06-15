@@ -1,21 +1,105 @@
 # Simulated Annealing
-## 輸入參數
 
-Bit, Run, Iteration, Rate, and ProblemType(0: onemax ; 1: deception)
+## Overview
 
-## 程式流程
+Simulated Annealing (SA) is a stochastic optimization algorithm inspired by the annealing process in metallurgy. Unlike Hill Climbing, which only accepts better solutions, SA occasionally accepts worse solutions with a certain probability, allowing it to escape local optima and explore the search space more effectively.
 
-#### <ins>初始化</ins>
-**Init()**: 依照Bit數建立初始佇列current_sol(value = 0 / 1)，並依照輸入的ProblemType去Evaluate其佇列分數
-初始參數： T = 100 ; alpha = 0.99
+This implementation supports:
 
-#### <ins>主程式</ins>
-1. 生成下一個佇列(next_sol)，每個element生成一個0~1的隨機數，若該值小於輸入的Rate值則0/1互換，並計算其分數
-2. 如果next_sol分數大於current_sol則更新current_sol
-3. 若next_sol分數小於current_sol，我們不像Hill Climbing一樣直接捨棄
-4. 先隨機生成隨機數P
-5. 由於要計算最大化問題，所以接受機率Accpt = e^(f(new)-f(current)/T)
-6. 如果P<Accept，則接受較差的解;反之則捨棄next_sol 
-7. 溫度降低 T = T * alpha
+* OneMax Problem
+* Deceptive Problem
+
+## Input Parameters
+
+| Parameter   | Description                |
+| ----------- | -------------------------- |
+| Bit         | Length of binary solution  |
+| Run         | Number of independent runs |
+| Iteration   | Maximum iterations         |
+| Rate        | Bit-flip mutation rate     |
+| ProblemType | 0 = OneMax, 1 = Deception  |
+
+
+## Procedure
+
+#### <ins>Initialization</ins>
+**Init()**: An initial binary solution is generated randomly.
+* current_solution = [0,1,0,1,1,...]
+* Initial temperature: 100
+* Cooling rate = 0.99
+
+#### <ins>Algorithm Procedure</ins>
+<ins>Step 1. Generate Neighbor Solution</ins>
+
+A neighboring solution is generated from the current solution.
+For every bit:
+Random(0,1) < Rate
+If true:
+* 0 → 1
+* 1 → 0
+<br>Otherwise the bit remains unchanged.
+The resulting solution is evaluated: next_solution
+
+
+<ins>Step 2. Accept Better Solution</ins>
+
+If the neighboring solution has a better fitness value:
+f(next_sol) > f(current_sol)
+<br>the new solution is accepted directly:
+current_sol = next_sol
+
+
+<ins>Step 3. Probabilistic Acceptance of Worse Solutions</ins>
+
+If the neighboring solution is worse: f(next_sol) ≤ f(current_sol)
+
+Simulated Annealing does not immediately reject it.
+
+Instead, an acceptance probability is calculated:
+
+Accpt = e^((f(next_sol)-f(current_sol))/T)
+
+Generate a random number: P ∈ [0,1]
+
+Decision rule:<br>
+if P < Accept：accept next_sol
+    
+else：reject next_sol
+
+
+<ins>Step 4. Cooling Schedule</ins>
+
+After each iteration, the temperature is decreased according to:
+
+T = T × α
+
+
+## Flow Chart
+
+```mermaid
+flowchart TD
+
+A[Start] --> B[Initialize Solution]
+B --> C[Generate Neighbor]
+C --> D[Evaluate Fitness]
+
+D --> E{Better Solution?}
+
+E -->|Yes| F[Accept Neighbor]
+E -->|No| G[Calculate Acceptance Probability]
+
+G --> H{Random < Accept?}
+
+H -->|Yes| F
+H -->|No| I[Reject Neighbor]
+
+F --> J[Cooling T=T×α]
+I --> J
+
+J --> K{Iteration End?}
+
+K -->|No| C
+K -->|Yes| L[End]
+```
   
           
